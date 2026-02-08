@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cyber Ops Terminal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#00ff9c;font-family:monospace;overflow:hidden}
+#matrix{position:fixed;inset:0;z-index:-3}
+#glow{position:fixed;inset:0;z-index:-2;
+  background:radial-gradient(ellipse at center, rgba(0,255,156,.08), transparent 60%)}
+.panel{padding:14px}
+.hidden{display:none}
+h3{margin:.2em 0 .6em}
+button{
+  width:100%;padding:12px;margin:6px 0;background:#000;
+  color:#00ff9c;border:1px solid #00ff9c;font-size:16px
+}
+pre{white-space:pre-wrap;font-size:13px;line-height:1.35}
+.bar{width:100%;height:18px;background:#033}
+.fill{height:100%;width:0%;background:#00ff9c}
+.red{color:#ff4b4b}.yellow{color:#ffe066}.green{color:#00ff9c}
+.badge{opacity:.7;font-size:12px}
+.flash{animation:flash .6s steps(2) infinite}
+@keyframes flash{50%{opacity:.2}}
+.shake{animation:shake .18s linear infinite}
+@keyframes shake{
+  0%{transform:translate(0)}25%{transform:translate(3px,-3px)}
+  50%{transform:translate(-3px,3px)}75%{transform:translate(3px,3px)}
+}
+.emergency{background:#220000!important;animation:redPulse .25s infinite}
+@keyframes redPulse{50%{background:#000}}
+.glitch{animation:glitch .12s infinite}
+@keyframes glitch{
+  0%{transform:translate(0)}
+  20%{transform:translate(-4px,2px)}
+  40%{transform:translate(4px,-2px)}
+  60%{transform:translate(-2px,-4px)}
+  80%{transform:translate(2px,4px)}
+}
+.freeze{filter:contrast(1.5) saturate(1.3)}
+</style>
+</head>
+<body onclick="goFull()">
+
+<canvas id="matrix"></canvas>
+<div id="glow"></div>
+
+<!-- MENU -->
+<div class="panel" id="menu">
+  <h3>CYBER OPS</h3>
+  <button onclick="start('GAME SERVER')">🎮 Game Server</button>
+  <button onclick="start('SOCIAL PLATFORM')">📱 Social Platform</button>
+  <button onclick="start('NETWORK NODE')">📡 Network Node</button>
+  <div class="badge">tap layar → fullscreen</div>
+</div>
+
+<!-- TERMINAL -->
+<div class="panel hidden" id="term">
+  <pre id="out"></pre>
+  <div class="bar"><div class="fill" id="fill"></div></div>
+  <p id="status"></p>
+</div>
+
+<audio id="key" loop>
+  <source src="https://www.soundjay.com/mechanical/keyboard-1.mp3">
+</audio>
+<audio id="beep">
+  <source src="https://www.soundjay.com/button/sounds/beep-07.mp3">
+</audio>
+
+<script>
+// fullscreen
+function goFull(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }
+}
+
+// MATRIX
+const c=document.getElementById("matrix"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize(); addEventListener('resize',resize);
+const chars="01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&@";
+const size=14; let drops=[];
+function resetDrops(){ drops=Array(Math.floor(c.width/size)).fill(1); }
+resetDrops();
+setInterval(()=>{
+  ctx.fillStyle="rgba(0,0,0,0.08)";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle="#00ff9c"; ctx.font=size+"px monospace";
+  drops.forEach((y,i)=>{
+    const t=chars[Math.floor(Math.random()*chars.length)];
+    ctx.fillText(t,i*size,y*size);
+    if(y*size>c.height && Math.random()>0.98) drops[i]=0;
+    drops[i]++;
+  });
+},50);
+
+// SIM SCRIPT
+const lines=[
+ "Booting cyber module...",
+ "Loading virtual exploit core...",
+ "Establishing secure tunnel...",
+ "Scanning target surface...",
+ "[ALERT] Firewall detected",
+ "Deploying bypass routine...",
+ "Injecting simulated payload...",
+ "Extracting data blocks...",
+ "Cleaning traces...",
+ "Finalizing operation..."
+];
+
+function typeLine(el, text, cb){
+  let i=0; const iv=setInterval(()=>{
+    el.innerHTML+=text[i++]||"";
+    if(i>text.length){clearInterval(iv); cb&&cb()}
+  },14);
+}
+
+function start(target){
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("term").classList.remove("hidden");
+
+  const out=document.getElementById("out");
+  const fill=document.getElementById("fill");
+  const stat=document.getElementById("status");
+  const key=document.getElementById("key");
+  const beep=document.getElementById("beep");
+
+  out.innerHTML="";
+  typeLine(out, "TARGET : "+target+"\n\n", ()=>{
+    key.play();
+    let i=0, p=0;
+    const iv=setInterval(()=>{
+      if(i<lines.length){
+        if(lines[i].includes("ALERT")){
+          out.innerHTML+=`\n<span class="red">${lines[i]}</span>\n`;
+          document.body.classList.add("shake"); beep.play();
+          setTimeout(()=>document.body.classList.remove("shake"),900);
+        } else out.innerHTML+=lines[i]+"\n";
+        i++;
+      }
+      p+=3; fill.style.width=p+"%";
+      if(p>45 && p<60) stat.innerHTML='<span class="yellow">Processing critical phase…</span>';
+      if(p>70 && p<85) stat.innerHTML='<span class="yellow flash">Stabilizing buffers…</span>';
+      if(p>=100){
+        clearInterval(iv); key.pause();
+        fakeDump(out, stat);
+      }
+    },420);
+  });
+}
+
+function fakeDump(out, stat){
+  out.innerHTML+=
+"\nDATA DUMP\n"+
+"#A9F3-22X\n#B7Q1-91Z\n#X0C8-77M\n#QK2D-0AA\n";
+  stat.innerHTML='<span class="green">✔ OPERATION COMPLETE</span>';
+  setTimeout(()=>countdown(out,stat),1200);
+}
+
+function countdown(out, stat){
+  let t=5; stat.innerHTML='<span class="red">SYSTEM WIPE IN '+t+'</span>';
+  const iv=setInterval(()=>{
+    t--; stat.innerHTML='<span class="red">SYSTEM WIPE IN '+t+'</span>';
+    if(t<=0){ clearInterval(iv); crash(out,stat); }
+  },800);
+}
+
+// ===== CRASH BRUTAL + FREEZE 60s =====
+function crash(out, stat){
+  document.body.classList.add("emergency","shake");
+  stat.innerHTML="<span class='red'>CRITICAL FAILURE</span>";
+  let spam=0;
+  const spammer=setInterval(()=>{
+    out.innerHTML+=
+      "<span class='red glitch'>[FATAL] MEMORY LEAK DETECTED</span>\n"+
+      "<span class='red glitch'>[ERR] KERNEL PANIC</span>\n"+
+      "<span class='red glitch'>[HALT] IO BUS FAILURE</span>\n";
+    out.scrollTop=out.scrollHeight;
+    if(++spam>6){
+      clearInterval(spammer);
+      freeze(out,stat);
+    }
+  },120);
+}
+
+function freeze(out, stat){
+  document.body.classList.add("freeze","emergency");
+  let sec=60, dots=0;
+  stat.innerHTML="<span class='red'>SYSTEM NOT RESPONDING…</span>";
+
+  const ticker=setInterval(()=>{
+    stat.innerHTML=
+      "<span class='red'>SYSTEM NOT RESPONDING"+
+      ".".repeat(dots%4)+
+      " <small>("+sec+"s)</small></span>";
+    dots++; sec--;
+    if(sec % 5 === 0){
+      document.body.classList.add("shake");
+      setTimeout(()=>document.body.classList.remove("shake"),600);
+    }
+    if(sec<0){
+      clearInterval(ticker);
+      hardReboot(out,stat);
+    }
+  },1000);
+}
+
+function hardReboot(out, stat){
+  document.body.className="";
+  out.innerHTML="\n>> HARD REBOOT INITIATED\n";
+  stat.innerHTML="<span class='yellow'>Reinitializing core modules…</span>";
+  let dots=0;
+  const iv=setInterval(()=>{
+    out.innerHTML+=".";
+    if(++dots>7){
+      clearInterval(iv);
+      out.innerHTML+="\n✔ SYSTEM ONLINE\n";
+      stat.innerHTML="<span class='green'>SIMULATION COMPLETE</span>";
+    }
+  },220);
+}
+</script>
+</body>
+</html>
